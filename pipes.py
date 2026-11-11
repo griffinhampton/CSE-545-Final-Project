@@ -80,15 +80,15 @@ class Pipe:
         # if they dont connect assume there's a leak. rotate until all opposite directions map
     def __str__(self):
         return self.pipe.to01()
-    def rotatePipe(self):
+    def rotate_pipe(self):
         self.pipe = (self.pipe >> 1 | self.pipe << 3) 
         # Perform left shift and wrap around the overflow bits
         #rotates pipe once
-    def whereIsPipe(self):
+    def where_is_pipe(self):
         return (self.row, self.col)
         #output = [x][y]
-    def checkNeighbors(self,grid):
-        cur_x, cur_y = self.whereIsPipe()[0], self.whereIsPipe()[1]
+    def check_neighbors(self,grid):
+        cur_x, cur_y = self.where_is_pipe()[0], self.where_is_pipe()[1]
         #pipe_location = whereIsPipe(grid)
         neighborPipes = []
         max_size=len(grid)
@@ -101,15 +101,60 @@ class Pipe:
                 neighborPipes.append(None)
         return neighborPipes
         #up, right, down, left
-    
+    def check_leaks(self,grid):
+        leaks = 0
+        neighbors = self.check_neighbors(grid)
+        for i in range(4): #checking each side
+            if self.pipe[i]: # iterates thru each binary value, 1 or 0 for each (open or closed)
+                neighbor = neighbors[i] # works bc if pipe is open on a side, the neighbor[i] would check the pipe on that side
+                opposite = (i + 2) % 4 # reverse logic of neighbor
+                if neighbor is None or not neighbor.pipe[opposite]:
+                    #if there is no pipe there or there is one but it's closed on the side facing the other pipe
+                    #then the opening leads nowhere, making a leak
+                    leaks +=1
+        return leaks
+    def connected_neighbors(self,grid):
+        connected = []
+        neighbors = self.check_neighbors(grid)
+        for i in range(4): #checking each side
+            if self.pipe[i]: # iterates thru each binary value, 1 or 0 for each (open or closed)
+                neighbor = neighbors[i] # works bc if pipe is open on a side, the neighbor[i] would check the pipe on that side
+                opposite = (i + 2) % 4 # reverse logic of neighbor
+                if self.pipe[i] and neighbor is not None and neighbor.pipe[opposite]:
+                    # if there is a pipe there or there is one and it's connected and facing the other pipe
+                    connected.append(neighbor)
+        return connected
         
 class Grid:
-    def __init__(self):
+    def __init__(self, pipes):
+        self.pipes = pipes
+
+    def show_grid(grid):
         pass
 
-    
-    def show_grid(grid):
-       pass
+    def check_grid(grid, self):
+        leaksForAllPipes = [] # Will contain lists of [[0, 1], [1, 0]] meaning tile 0 has 1 leak, tile 1 has 0 leaks, etc
+        islandNumber = {} 
+        #the idea for islands is that each pipe is assumed to be an island, whenever proven false the island status
+        #moves to the next pipe, if it doesnt move assume it's an island 
+        i = 0
+        for row in self.pipes:
+            for pipe in row:
+                leaksForAllPipes.append([i, pipe.check_leaks(self.pipes)])
+                islandNumber[pipe] = i # every pipe starts its own number
+                for neighbor in pipe.connected_neighbors(self.pipes):
+                    if neighbor in islandNumber and islandNumber[neighbor] !=1:
+                        # only do anything if loop reached this before (if neighbor in islandNumber)
+                        # AND the neighbor is on a different island than the current pipe (where 1 is the pipes number)
+                        temp = islandNumber[neighbor]
+                        for pp in islandNumber:
+                            # move everything from old island here, continuing it (eventually finding the end)
+                            if islandNumber[pp] == temp:
+                                islandNumber[pp] = i
+                i += 1
+        islands = len(set(islandNumber.values()))
+        # we can score the islands however we want
+        return leaksForAllPipes, islands
         
 
 def loadFile(location: str):
@@ -131,6 +176,7 @@ def loadFile(location: str):
     return pipes
 
 BASE_DIR = Path(__file__).resolve().parent
+
 def select_file():
     files = sorted(BASE_DIR.glob("*.txt"))
     if not files:

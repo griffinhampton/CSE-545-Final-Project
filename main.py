@@ -10,6 +10,7 @@ if __name__ == "__main__":
     
     print("gurt: yo")
     loaded_pipes = loadFile(select_file())
+    grid = Grid(loaded_pipes)
     i=0
     for row in loaded_pipes:
         for val in row:

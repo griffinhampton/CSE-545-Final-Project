@@ -13,6 +13,8 @@ class WisdomOfCrowds:
         for i in range(self.runs):
             best_sol = self.ga_runner()
             crowd_solutions.append(best_sol)
+            if best_sol==0:
+                break
         return crowd_solutions
     
     def extract_rotations(self, grid_pipes):

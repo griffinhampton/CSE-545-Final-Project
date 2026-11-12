@@ -102,6 +102,23 @@ if __name__ == "__main__":
 
     crowd = woc.collect_crowd()
 
+    #added score, best_member, and if statement to overcome a misinformed consensus vote
+    def score(bits):
+        leaks, islands = woc.build_grid_from_bitstrings(bits).check_grid()
+        return sum(l[1] for l in leaks) + 2 * (islands - 1)
+
+    best_member = min(crowd, key=score)
+
+    if score(best_member) == 0:
+        print("\n[WoC] A crowd member solved it; using that solution directly.")
+        final_bits = best_member
+    else:
+        consensus_matrix, fixed_mask, stats = woc.aggregate_consensus(crowd)
+        # ...existing locked-tiles print...
+        final_bits = consensus_matrix if score(consensus_matrix) <= score(best_member) else best_member
+
+    final_grid = woc.build_grid_from_bitstrings(final_bits)
+
     consensus_matrix, fixed_mask, stats = woc.aggregate_consensus(crowd)
 
     fixed_count = sum(sum(row) for row in fixed_mask)

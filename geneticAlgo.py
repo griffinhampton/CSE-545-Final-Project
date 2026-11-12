@@ -29,8 +29,6 @@ class GeneticAlgo:
         self.locked = locked
         self.stallLimit = stallLimit
         self.vis_interval = vis_interval
-    def isLocked(self, pipe):
-        return self.locked is not None and self.locked[pipe.row][pipe.col]
     def copyBoard(self,board):
         return Grid([[Pipe(p.pipe, p.row, p.col) for p in row] for row in board.pipes])
     def randomBoard(self):

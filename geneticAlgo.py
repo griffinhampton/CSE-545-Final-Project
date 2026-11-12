@@ -55,13 +55,6 @@ class GeneticAlgo:
                 row.append(Pipe(parent.pipes[r][c].pipe, r, c))
             child.append(row)
         return Grid(child)
-    def localLeaks(self, board, pipe):
-        # leaks on this tile plus the 4 tiles around it
-        total = pipe.check_leaks(board.pipes)
-        for n in pipe.check_neighbors(board.pipes):
-            if n is not None:
-                total += n.check_leaks(board.pipes)
-        return total
     def mutate(self, board):
         # rotates one random pipe
         row = rand.choice(board.pipes)

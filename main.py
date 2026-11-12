@@ -49,7 +49,7 @@ def configure_settings():
         "file_path": str(selected_file),
         "runs": prompt_int("Crowd size (number of GA runs)", default=15, min_val=1),
         "agreement_threshold": prompt_float("WoC agreement threshold (0.0 - 1.0)", default=0.80, min_val=0.0, max_val=1.0),
-        "pop_size": prompt_int("GA population size", default=100, min_val=4),
+        "pop_size": prompt_int("GA population size", default=100, min_val=1),
         "generations": prompt_int("GA max generations per run", default=5000, min_val=1),
         "mutation_rate": prompt_float("GA mutation rate (0.0 - 1.0)", default=0.10, min_val=0.0, max_val=1.0),
         "visualize": prompt_bool("Show live grid progress?", default=False),

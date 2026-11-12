@@ -53,17 +53,32 @@ PIPE_GRAPHICS = {
 
 
 
-def show_grid(grid, graphics=PIPE_GRAPHICS):
-    # Load every tile once, straight from the paths in the dict
-    tiles = {mask: plt.imread(path) for mask, path in graphics.items()}
+_TILE_CACHE = {}
 
-    
-    rows = [np.hstack([tiles[mask] for mask in row]) for row in grid]
+def show_grid(grid, graphics=PIPE_GRAPHICS, pause_time=0.05, title=None):
+    global _TILE_CACHE
+    if not _TILE_CACHE:
+        _TILE_CACHE = {mask: plt.imread(path) for mask, path in graphics.items()}
+
+    # Support either a Grid instance or a 2D list of Pipes/bitarrays
+    pipe_rows = grid.pipes if hasattr(grid, "pipes") else grid
+    rows = []
+    for row in pipe_rows:
+        row_imgs = []
+        for cell in row:
+            mask = cell.pipe if hasattr(cell, "pipe") else cell
+            row_imgs.append(_TILE_CACHE[mask])
+        rows.append(np.hstack(row_imgs))
+
     image = np.vstack(rows)
 
-    plt.imshow(image, interpolation="nearest") 
+    plt.clf()
+    plt.imshow(image, interpolation="nearest")
+    if title:
+        plt.title(title)
     plt.axis("off")
-    plt.show()
+    plt.draw()
+    plt.pause(pause_time)
 
 # ALSO - BITARRAYS CANNOT BE HASHED SO PIPE_GRAPHICS[pipe.pipe] WILL CRASH
 # you MUST turn it into an int int(pipe.pipe.to01(), 2) to match it w current dictionary
@@ -132,7 +147,7 @@ class Grid:
     def show_grid(grid):
         pass
 
-    def check_grid(grid, self):
+    def check_grid(self):
         leaksForAllPipes = [] # Will contain lists of [[0, 1], [1, 0]] meaning tile 0 has 1 leak, tile 1 has 0 leaks, etc
         islandNumber = {} 
         #the idea for islands is that each pipe is assumed to be an island, whenever proven false the island status
@@ -143,7 +158,7 @@ class Grid:
                 leaksForAllPipes.append([i, pipe.check_leaks(self.pipes)])
                 islandNumber[pipe] = i # every pipe starts its own number
                 for neighbor in pipe.connected_neighbors(self.pipes):
-                    if neighbor in islandNumber and islandNumber[neighbor] !=1:
+                    if neighbor in islandNumber and islandNumber[neighbor] !=i:
                         # only do anything if loop reached this before (if neighbor in islandNumber)
                         # AND the neighbor is on a different island than the current pipe (where 1 is the pipes number)
                         temp = islandNumber[neighbor]
@@ -161,18 +176,20 @@ def loadFile(location: str):
     pipes = []
     # https://numpy.org/devdocs/user/absolute_beginners.html
     # 2d array, 7 rows of 7 binary objects
-    row = 0
     cur_row = []
     with open(location) as f:
         for line in f:
             if not line.startswith("#"):
-                if line == "\n":
-                    row += 1
-                    pipes.append(cur_row)
-                    cur_row = []
+                stripped = line.strip()
+                if stripped == "":
+                    if cur_row:
+                        pipes.append(cur_row)
+                        cur_row = []
                     continue
                 pipe = Pipe(line, len(pipes), len(cur_row))
                 cur_row.append(pipe)
+        if cur_row:
+            pipes.append(cur_row)
     return pipes
 
 BASE_DIR = Path(__file__).resolve().parent

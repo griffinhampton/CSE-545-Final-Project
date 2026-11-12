@@ -9,7 +9,7 @@ class WisdomOfCrowds:
         self.threshold = agreement_threshold
         
     def collect_crowd(self):
-        crowd = []
+        crowd_solutions = []
         for i in range(self.runs):
             best_sol = self.ga_runner()
             crowd_solutions.append(best_sol)

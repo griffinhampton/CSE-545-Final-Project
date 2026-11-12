@@ -143,10 +143,6 @@ class Pipe:
 class Grid:
     def __init__(self, pipes):
         self.pipes = pipes
-
-    def show_grid(grid):
-        pass
-
     def check_grid(self):
         leaksForAllPipes = [] # Will contain lists of [[0, 1], [1, 0]] meaning tile 0 has 1 leak, tile 1 has 0 leaks, etc
         islandNumber = {} 

@@ -13,7 +13,8 @@ class WisdomOfCrowds:
         for i in range(self.runs):
             best_sol = self.ga_runner()
             crowd_solutions.append(best_sol)
-            if best_sol==0:
+            leaks, islands = self.build_grid_from_bitstrings(best_sol).check_grid()
+            if sum(l[1] for l in leaks) == 0 and islands == 1: # this run solved it, no need for more
                 break
         return crowd_solutions
     
@@ -33,7 +34,7 @@ class WisdomOfCrowds:
             for c in range(cols):
                 votes = Counter(sol[r][c] for sol in crowd_solutions)
                 most_common_pipe, count = votes.most_common(1)[0]
-                agreement_ratio = count / self.runs
+                agreement_ratio = count / len(crowd_solutions)
                 
                 consensus_grid[r][c] = most_common_pipe
                 if agreement_ratio >= self.threshold:

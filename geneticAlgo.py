@@ -19,7 +19,7 @@ what this GA needs to do:
 create new board -> shuffle board -> crossover -> mutate
 '''
 class GeneticAlgo:
-    def __init__(self, grid, popSize=500, mutationRate=0.1, generations=5000, visualize = False, vis_interval = 100, locked=None, stallLimit=150): # base case constructor but overridable
+    def __init__(self, grid, popSize=500, mutationRate=0.1, generations=5000, visualize = False, vis_interval = 100, locked=None, stallLimit=250): # base case constructor but overridable
         self.popSize = popSize # how many tours exist at once
         self.mutationRate = mutationRate #chance that a child is mutated
         self.generations = generations # how many rounds to run
